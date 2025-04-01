@@ -28,17 +28,19 @@ base.createInternetExchange(100)
 
 # AS-150
 as150 = base.createAutonomousSystem(150)
-scion_isd.addIsdAs(1, 150, is_core=False)
-scion_isd.setCertIssuer((1, 150), issuer=152)
+scion_isd.addIsdAs(1, 150, is_core=True)
+# scion_isd.setCertIssuer((1, 150), issuer=152)
 as150.createNetwork('net0')
 as150_cs = as150.createControlService('cs1').joinNetwork('net0')
 as150_router = as150.createRouter('br0')
 as150_router.joinNetwork('net0').joinNetwork('ix100')
+as150_router.crossConnect(153, 'br0', '10.50.0.2/29')
+
 
 # AS-151
 as151 = base.createAutonomousSystem(151)
-scion_isd.addIsdAs(1, 151, is_core=False)
-scion_isd.setCertIssuer((1, 151), issuer=152)
+scion_isd.addIsdAs(1, 151, is_core=True)
+# scion_isd.setCertIssuer((1, 151), issuer=152)
 as151.createNetwork('net0')
 as151.createControlService('cs1').joinNetwork('net0')
 as151_router = as151.createRouter('br0').joinNetwork('net0').joinNetwork('ix100')
@@ -50,9 +52,23 @@ as152.createNetwork('net0')
 as152.createControlService('cs1').joinNetwork('net0')
 as152_router = as152.createRouter('br0').joinNetwork('net0').joinNetwork('ix100')
 
+# AS-153
+as153 = base.createAutonomousSystem(153)
+scion_isd.addIsdAs(1, 153, is_core=False)
+scion_isd.setCertIssuer((1, 153), issuer=150)
+as153.createNetwork('net0')
+as153_cs = as153.createControlService('cs1').joinNetwork('net0')
+as153_router = as153.createRouter('br0')
+as153_router.joinNetwork('net0')
+as153_router.crossConnect(150, 'br0', '10.50.0.3/29')
+
 # SCION links
-scion.addIxLink(100, (1, 150), (1, 152), ScLinkType.Transit)
-scion.addIxLink(100, (1, 151), (1, 152), ScLinkType.Transit)
+scion.addIxLink(100, (1, 150), (1, 151), ScLinkType.Core)
+scion.addIxLink(100, (1, 151), (1, 152), ScLinkType.Core)
+scion.addIxLink(100, (1, 152), (1, 150), ScLinkType.Core)
+scion.addXcLink((1, 150), (1, 153), ScLinkType.Transit)
+
+
 
 # Rendering
 emu.addLayer(base)
